@@ -1,0 +1,63 @@
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="./main.css" />
+        <script src="https://d3js.org/d3.v4.min.js"></script>
+        <title id="title">Global Surface Temperature Heat Map</title>
+    </head>
+    <body>
+        <h1>Global Warming Doomsday Chart</h1>
+        <h2>Oh no</h2>
+        <div id="chart-container">
+
+            <script>
+                d3.json('global-temperature.json', (data) => {
+                    
+                    const w = 1200;
+                    const h = 400;
+                    const pad = 80; 
+
+                    const baseTemp = data.baseTemperature;
+                    const dataset = data.monthlyVariance;
+                    const canvas = d3.select("#chart-container").attr("width", w + pad).attr("height", h + pad);
+                    const svg = canvas.append("svg")
+                                    .attr("width", w + pad)
+                                    .attr("height", h + pad)
+                                    .attr("id", "chart")
+                                    .style("background", "pink");
+                    const minYear = d3.min(dataset, (d) => d.year);
+                    const maxYear = d3.max(dataset, (d) => d.year);
+
+                    const xScale = d3.scaleLinear()
+                                    .domain([minYear, maxYear])
+                                    .range([pad, w]);
+
+                    const yScale = d3.scaleLinear()
+                                    .domain([1, 12])
+                                    .range([h - pad, pad])
+                     
+                    console.log(xScale(1985))
+
+                    svg
+                        .selectAll("rect")
+                        .data(dataset)
+                        .enter()
+                        .append("rect")
+                        .attr("x", (d) => xScale(d.year))
+                        .attr("y", (d) => h - yScale(d.month))
+                        .attr("width", 4)
+                        .attr("height", 22)
+                        .style("fill", "blue")
+                        .style("stroke", "pink")
+
+                    
+
+
+
+                
+                });
+            
+            
+            </script>
+        </div>
+    </body>
+</html>
