@@ -5,25 +5,25 @@
         <title id="title">Global Surface Temperature Heat Map</title>
     </head>
     <body>
-        <h1>Global Warming Doomsday Chart</h1>
-        <h2>Oh no</h2>
+        <h1>Global Surface Land Temperature Variance</h1>
+        <h2>Does not look good for humans</h2>
         <div id="chart-container">
 
             <script>
                 d3.json('global-temperature.json', (data) => {
                     
-                    const w = 1200;
+                    const w = 1024;
                     const h = 400;
                     const pad = 80; 
 
                     const baseTemp = data.baseTemperature;
                     const dataset = data.monthlyVariance;
-                    const canvas = d3.select("#chart-container").attr("width", w + pad).attr("height", h + pad);
+                    const canvas = d3.select("#chart-container");
                     const svg = canvas.append("svg")
                                     .attr("width", w + pad)
                                     .attr("height", h + pad)
                                     .attr("id", "chart")
-                                    .style("background", "pink");
+                                    .style("background", "white");
                     const minYear = d3.min(dataset, (d) => d.year);
                     const maxYear = d3.max(dataset, (d) => d.year);
 
@@ -35,7 +35,13 @@
                                     .domain([1, 12])
                                     .range([h - pad, pad])
                      
-                    console.log(xScale(1985))
+                    const tooltip = d3.select("body")
+                                    .append("div")
+                                    .attr("id", "tooltip")
+                                    .style("position", "absolute")
+                                    .style("top", "100px")
+                                    .style("left", "100px")
+                                    .style("opacity", 0);
 
                     svg
                         .selectAll("rect")
@@ -46,15 +52,99 @@
                         .attr("y", (d) => h - yScale(d.month))
                         .attr("width", 4)
                         .attr("height", 22)
-                        .style("fill", "blue")
-                        .style("stroke", "pink")
+                        .attr("rx", 2)
+                        .attr("ry", 2)
+                        .style("fill", (d) => setColorTemp(d.variance))
+                        //.style("stroke", "white")
+                        .on("mouseover", function(d,i) {
+                            d3.select(this).style("fill", "black");
+                            d3.select("#tooltip")
+                                .style("top", d3.event.pageY + 20)
+                                .style("left", d3.event.pageX)
+                                .style("opacity", .8)
+                                .style("border-color", setColorTemp(d.variance))
+                                .html("<p>" + getMonth(d.month) + ", " + d.year + "<br />Temp. Variance: " + d.variance + "</p>")
 
-                    
+                        })
+                        .on("mouseout", function(d,i) {
+                            d3.select(this).style("fill", setColorTemp(d.variance));
+                            d3.select("#tooltip")
+                                .style("top", "-100px")
+                                .style("left", "-100px")
+                                .style("opacity", 0)
+                                .html("")
+                        });
+                        
 
-
-
-                
                 });
+
+                function setColorTemp(num) {
+                    var v = num;
+                            if (v >= 4) {
+                                return "red";
+                            } else if (v > 3) {
+                                return "orangered";
+                            } else if (v > 2) {
+                                return "coral";
+                            } else if (v > 1) {
+                                return "orange";
+                            } else if (v > 0) {
+                                return "gold";
+                            } else if (v > -1) {
+                                return "khaki";
+                            } else if (v > -2) {
+                                return "lightcyan";
+                            } else if (v > -3) {
+                                return "paleturquoise";
+                            } else if (v > -4) {
+                                return "cornflowerblue";
+                            } else {
+                                return "royalblue";
+                            }
+                }
+
+                function getMonth(num) {
+                    switch(num) {
+                        case 1: 
+                            return "January";
+                            break;
+                        case 2: 
+                            return "February";
+                            break;
+                        case 3: 
+                            return "March";
+                            break;
+                        case 4: 
+                            return "April";
+                            break;
+                        case 5: 
+                            return "May";
+                            break;
+                        case 6: 
+                            return "June";
+                            break;
+                        case 7: 
+                            return "July";
+                            break;
+                        case 8: 
+                            return "August";
+                            break;
+                        case 9: 
+                            return "September";
+                            break;
+                        case 10: 
+                            return "October";
+                            break;
+                        case 11: 
+                            return "November";
+                            break;
+                        case 12: 
+                            return "December";
+                            break;
+                        default: 
+                            return "";
+                    }
+                }
             
             
             </script>
