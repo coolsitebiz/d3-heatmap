@@ -27,16 +27,22 @@
                     const minYear = d3.min(dataset, (d) => d.year);
                     const maxYear = d3.max(dataset, (d) => d.year);
 
+
                     const xScale = d3.scaleLinear()
                                     .domain([minYear, maxYear])
                                     .range([pad, w]);
 
                     const yScale = d3.scaleLinear()
-                                    .domain([1, 12])
+                                    .domain([1,12])
                                     .range([h - pad, pad]);
 
                     const xAxis = d3.axisBottom(xScale);
                     const yAxis = d3.axisLeft(yScale);
+
+                    const monthScale = d3.scaleTime()
+                                        .domain([new Date("1753-01-01"), new Date("1753-12-1")])
+                                        .range([h - pad, pad]);
+                    const monthAxis = d3.axisLeft(monthScale);
                       
                     const tooltip = d3.select("body")
                                     .append("div")
@@ -45,6 +51,8 @@
                                     .style("top", "100px")
                                     .style("left", "100px")
                                     .style("opacity", 0);
+
+                    console.log(yScale(12))
 
                     svg //rect plot
                         .selectAll("rect")
@@ -87,7 +95,7 @@
                         .append("g")
                         .attr("id", "y-axis")
                         .attr("transform", "translate(" + (pad-5) + ", 12)")
-                        .call(yAxis);
+                        .call(monthAxis.tickFormat(d3.timeFormat("%B")));
                         
 
                 });
