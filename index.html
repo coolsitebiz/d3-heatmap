@@ -5,8 +5,8 @@
         <title id="title">Global Surface Temperature Heat Map</title>
     </head>
     <body>
-        <h1>Global Surface Land Temperature Variance</h1>
-        <h2>Does not look good for humans</h2>
+        <h1>Monthly Global Land-Surface Temperature</h1>
+        <h2>1753 - 2015: base temperature 8.66℃</h2>
         <div id="chart-container">
 
             <script>
@@ -33,8 +33,11 @@
 
                     const yScale = d3.scaleLinear()
                                     .domain([1, 12])
-                                    .range([h - pad, pad])
-                     
+                                    .range([h - pad, pad]);
+
+                    const xAxis = d3.axisBottom(xScale);
+                    const yAxis = d3.axisLeft(yScale);
+                      
                     const tooltip = d3.select("body")
                                     .append("div")
                                     .attr("id", "tooltip")
@@ -43,19 +46,18 @@
                                     .style("left", "100px")
                                     .style("opacity", 0);
 
-                    svg
+                    svg //rect plot
                         .selectAll("rect")
                         .data(dataset)
                         .enter()
                         .append("rect")
                         .attr("x", (d) => xScale(d.year))
                         .attr("y", (d) => h - yScale(d.month))
-                        .attr("width", 4)
+                        .attr("width", 3.5)
                         .attr("height", 22)
                         .attr("rx", 2)
                         .attr("ry", 2)
                         .style("fill", (d) => setColorTemp(d.variance))
-                        //.style("stroke", "white")
                         .on("mouseover", function(d,i) {
                             d3.select(this).style("fill", "black");
                             d3.select("#tooltip")
@@ -63,7 +65,7 @@
                                 .style("left", d3.event.pageX)
                                 .style("opacity", .8)
                                 .style("border-color", setColorTemp(d.variance))
-                                .html("<p>" + getMonth(d.month) + ", " + d.year + "<br />Temp. Variance: " + d.variance + "</p>")
+                                .html("<p>" + getMonth(d.month) + ", " + d.year + "<br />Surface Temp.: " + (baseTemp + d.variance).toFixed(2) + "&deg;C<br />Temp. Variance: " + d.variance + "&deg;C</p>")
 
                         })
                         .on("mouseout", function(d,i) {
@@ -74,6 +76,18 @@
                                 .style("opacity", 0)
                                 .html("")
                         });
+
+                    svg //x axis
+                        .append("g")
+                        .attr("id", "x-axis")
+                        .attr("transform", "translate(0, " + (h - 55) + ")")
+                        .call(xAxis.tickFormat(d3.format("d")));
+                        
+                    svg //y axis
+                        .append("g")
+                        .attr("id", "y-axis")
+                        .attr("transform", "translate(" + (pad-5) + ", 12)")
+                        .call(yAxis);
                         
 
                 });
