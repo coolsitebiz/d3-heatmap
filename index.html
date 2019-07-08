@@ -6,7 +6,7 @@
     </head>
     <body>
         <h1>Monthly Global Land-Surface Temperature</h1>
-        <h2>1753 - 2015: base temperature 8.66℃</h2>
+        <h2 id="description">1753 - 2015: base temperature 8.66℃</h2>
         <div id="chart-container">
 
             <script>
@@ -14,53 +14,62 @@
                     
                     const w = 1024;
                     const h = 400;
+                    const legendWidth = 180;
                     const pad = 80; 
 
                     const baseTemp = data.baseTemperature;
                     const dataset = data.monthlyVariance;
+                    const legendData = [-5, -4, -3, -2,-1, 0, 1, 2, 3, 4, 5];
                     const canvas = d3.select("#chart-container");
                     const svg = canvas.append("svg")
                                     .attr("width", w + pad)
                                     .attr("height", h + pad)
                                     .attr("id", "chart")
                                     .style("background", "white");
+                    
+
+
                     const minYear = d3.min(dataset, (d) => d.year);
                     const maxYear = d3.max(dataset, (d) => d.year);
-
+                    const monthArray = ["December", "November", "October", "September", "August", "July", "June", "May", "April", "March", "February", "January"];
 
                     const xScale = d3.scaleLinear()
                                     .domain([minYear, maxYear])
                                     .range([pad, w]);
 
                     const yScale = d3.scaleLinear()
-                                    .domain([1,12])
+                                    .domain([0,11])
                                     .range([h - pad, pad]);
+
+                    const legendScale = d3.scaleLinear()
+                                            .domain([legendData[0], legendData[legendData.length - 1]])
+                                            .range([pad, pad + legendWidth]);
 
                     const xAxis = d3.axisBottom(xScale);
                     const yAxis = d3.axisLeft(yScale);
-
-                    const monthScale = d3.scaleTime()
-                                        .domain([new Date("1753-12-1"), new Date("1753-01-01")])
-                                        .range([h - pad, pad]);
-                    const monthAxis = d3.axisLeft(monthScale);
+                    const legendAxis = d3.axisBottom(legendScale);
                       
                     const tooltip = d3.select("body")
                                     .append("div")
                                     .attr("id", "tooltip")
+                                    .attr("data-year", "")
                                     .style("position", "absolute")
                                     .style("top", "100px")
                                     .style("left", "100px")
                                     .style("opacity", 0);
 
-                    console.log(yScale(12))
 
-                    svg //rect plot
-                        .selectAll("rect")
+                    svg //cell plot
+                        .selectAll(".cell")
                         .data(dataset)
                         .enter()
                         .append("rect")
+                        .attr("class", "cell")
+                        .attr("data-month", (d) => d.month - 1)
+                        .attr("data-year", (d) => d.year)
+                        .attr("data-temp", (d) => d.variance)
                         .attr("x", (d) => xScale(d.year))
-                        .attr("y", (d) => h - yScale(d.month))
+                        .attr("y", (d) => h - yScale(d.month - 1))
                         .attr("width", 3.5)
                         .attr("height", 22)
                         .attr("rx", 2)
@@ -69,6 +78,7 @@
                         .on("mouseover", function(d,i) {
                             d3.select(this).style("fill", "black");
                             d3.select("#tooltip")
+                                .attr("data-year", d.year)
                                 .style("top", d3.event.pageY + 20)
                                 .style("left", d3.event.pageX)
                                 .style("opacity", .8)
@@ -82,6 +92,7 @@
                                 .style("top", "-100px")
                                 .style("left", "-100px")
                                 .style("opacity", 0)
+                                .attr("data-year", "")
                                 .html("")
                         });
 
@@ -94,9 +105,38 @@
                     svg //y axis
                         .append("g")
                         .attr("id", "y-axis")
+                        .attr("text-anchor", "bottom")
                         .attr("transform", "translate(" + (pad-5) + ", 12)")
-                        .call(monthAxis.tickFormat(d3.timeFormat("%B")));
+                        .call(yAxis.tickFormat((d, i) => monthArray[i]));
                         
+                    svg //legend
+                        .append("g")
+                        .attr("id", "legend")
+                        .selectAll(".legend-cell")
+                        .data(legendData)
+                        .enter()
+                        .append("rect")
+                        .attr("class", "legend-cell")
+                        .attr("x", (d) => legendScale(d))
+                        .attr("y", h)
+                        .attr("width", 20)
+                        .attr("height", 20)
+                        .style("fill", (d) => d < 5 ? setColorTemp(d) : "white")
+
+                    svg
+                        .append("g")
+                        .attr("transform", "translate(0," + (h + 21) + ")")
+                        .call(legendAxis); 
+                    
+                    svg 
+                        .append("text")
+                        .attr("x", pad + 35)
+                        .attr("y", h + 55)
+                        .style("font-size", ".8em")
+                        .text("Temp. Variance")
+                        
+
+
 
                 });
 
@@ -104,21 +144,21 @@
                     var v = num;
                             if (v >= 4) {
                                 return "red";
-                            } else if (v > 3) {
+                            } else if (v >= 3) {
                                 return "orangered";
-                            } else if (v > 2) {
+                            } else if (v >= 2) {
                                 return "coral";
-                            } else if (v > 1) {
+                            } else if (v >= 1) {
                                 return "orange";
-                            } else if (v > 0) {
+                            } else if (v >= 0) {
                                 return "gold";
-                            } else if (v > -1) {
+                            } else if (v >= -1) {
                                 return "khaki";
-                            } else if (v > -2) {
+                            } else if (v >= -2) {
                                 return "lightcyan";
-                            } else if (v > -3) {
+                            } else if (v >= -3) {
                                 return "paleturquoise";
-                            } else if (v > -4) {
+                            } else if (v >= -4) {
                                 return "cornflowerblue";
                             } else {
                                 return "royalblue";
@@ -171,5 +211,6 @@
             
             </script>
         </div>
+        <script src="https://cdn.freecodecamp.org/testable-projects-fcc/v1/bundle.js"></script>
     </body>
 </html>
